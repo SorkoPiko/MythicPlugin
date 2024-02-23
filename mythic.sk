@@ -1,7 +1,7 @@
 options:
-	version: 1.1.1
+	version: 1.2.0
 
-	changelog: "&l&nChangelog v1.1.1 23/02/2024&r%nl% - Fixed bug with version variable not resetting%nl% - Re-added cooldown for ""Hyper"" ability"
+	changelog: "&l&nChangelog v1.2.0 23/02/2024&r%nl% - Fixed updater"
 
 	zeus: white dye
 	zeus.lc.name: "Lightning Dash"
@@ -496,6 +496,7 @@ on load:
 		loop all players:
 			loop-player is op
 			send {@changelog} to loop-player
+		set {dev} to {@developer}
 
 # hades rc events
 
@@ -529,6 +530,7 @@ on death of wither skeleton:
 
 command /plugin:
 	trigger:
+		set {version} to "{@version}"
 		set {_dev} to {@developer} parsed as offline player
 		set {_check} to line 2 from url "https://github.com/SorkoPiko/MythicPlugin/raw/main/mythic.sk"
 		replace "	version: " with "" in {_check}
@@ -566,24 +568,3 @@ command /tool <string>:
 			send "&aYou have been given the &eHades &atool!" to player
 		else:
 			send "Usage: /tool <zeus/poseidon/hermes/ares/helios/hades>" to player
-
-command /update:
-	trigger:
-		set {version} to "{@version}"
-		if player is {@developer} parsed as offline player:
-			set {_check} to line 2 from url "https://github.com/SorkoPiko/MythicPlugin/raw/main/mythic.sk"
-			replace "	version: " with "" in {_check}
-			set {_latest} to compareVersions({_check}, "{@version}")
-			send "&aCurrent Version: &e{@version}" to player
-			if {_latest} is 1:
-				send "&aDownloading update..." to player
-				#skutil download file from "https://github.com/SorkoPiko/MythicPlugin/raw/main/mythic.sk" to file "plugins/skript/scripts/mythic.sk"
-				send "&aUpdate downloaded!" to player
-				execute console command "sk reload mythic"
-			else if {_latest} is 2:
-				send "&eYou are using a newer version!" to player
-			else if {_latest} is 0:
-				send "&aYou are using the latest version!" to player
-		else:
-			send "&cYou do not have permission to use this command!" to player
- 

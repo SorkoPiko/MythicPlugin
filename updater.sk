@@ -1,0 +1,20 @@
+command /update:
+	trigger:
+		if player is {dev} parsed as offline player:
+			set {_check} to line 2 from url "https://github.com/SorkoPiko/MythicPlugin/raw/main/mythic.sk"
+			replace "	version: " with "" in {_check}
+			set {_latest} to compareVersions({_check}, {version})
+			send "&aCurrent Version: &e%{version}%" to player
+			if {_latest} is 1:
+				skutil delete file "plugins/skript/scripts/mythic.sk"
+				send "&aDownloading update..." to player
+				download file from "https://github.com/SorkoPiko/MythicPlugin/raw/main/mythic.sk" to file "plugins/skript/scripts/mythic.sk"
+				send "&aUpdate downloaded!" to player
+				execute console command "sk reload mythic"
+			else if {_latest} is 2:
+				send "&eYou are using a newer version!" to player
+			else if {_latest} is 0:
+				send "&aYou are using the latest version!" to player
+		else:
+			send "&cYou do not have permission to use this command!" to player
+ 
