@@ -1,7 +1,7 @@
 options:
-	version: 1.2.6
+	version: 1.2.7
 
-	changelog: "&l&nChangelog v1.2.6 23/02/2024&r%nl% - Fixed accidental debug broadcast on join"
+	changelog: "&l&nChangelog v1.2.7 23/02/2024&r%nl% - Fix dupe on death"
 
 	zeus: white dye
 	zeus.lc.name: "Lightning Dash"
@@ -509,28 +509,25 @@ on death of player:
 		custom model data of loop-item is 1
 		if loop-item is {@zeus}:
 			remove loop-item from drops
-			wait 1 tick
-			add loop-item to victim's inventory
+			add loop-item to {_readdDrops::*}
 		else if loop-item is {@poseidon}:
 			remove loop-item from drops
-			wait 1 tick
-			add loop-item to victim's inventory
+			add loop-item to {_readdDrops::*}
 		else if loop-item is {@hermes}:
 			remove loop-item from drops
-			wait 1 tick
-			add loop-item to victim's inventory
+			add loop-item to {_readdDrops::*}
 		else if loop-item is {@ares}:
 			remove loop-item from drops
-			wait 1 tick
-			add loop-item to victim's inventory
+			add loop-item to {_readdDrops::*}
 		else if loop-item is {@helios}:
 			remove loop-item from drops
-			wait 1 tick
-			add loop-item to victim's inventory
+			add loop-item to {_readdDrops::*}
 		else if loop-item is {@hades}:
 			remove loop-item from drops
-			wait 1 tick
-			add loop-item to victim's inventory
+			add loop-item to {_readdDrops::*}
+	wait 1 tick
+	loop {_readdDrops::*}:
+		give loop-value to victim
 
 on load:
 	if {version} is not "{@version}":
