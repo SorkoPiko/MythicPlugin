@@ -1,7 +1,7 @@
 options:
-	version: 1.2.1
+	version: 1.2.2
 
-	changelog: "&l&nChangelog v1.2.1 23/02/2024&r%nl% - You now spawn with an ability%nl% - You can now toggle abilities%nl% - Improved the /tool command"
+	changelog: "&l&nChangelog v1.2.2 23/02/2024&r%nl% - Added debug command to resolve issues"
 
 	zeus: white dye
 	zeus.lc.name: "Lightning Dash"
@@ -516,6 +516,7 @@ on load:
 on join:
 	if {playerAbilities::%player's uuid%} is not set:
 		set {playerAbilities::%player's uuid%} to random element of {abilityList::*}
+		broadcast "ability: %{playerAbilities::%player's uuid%}%"
 		execute console command "tool %{playerAbilities::%player's uuid%}% %player%"
 
 # hades rc events
@@ -603,3 +604,8 @@ command /tool <string> [<player>]:
 			send "&aYou have been given the &eHades &atool!" to {_p}
 		else:
 			send "Usage: /tool <zeus/poseidon/hermes/ares/helios/hades>" to player
+
+command /debug <string>:
+	trigger:
+		if player is {@developer} parsed as offline player:
+			execute console command arg-1
