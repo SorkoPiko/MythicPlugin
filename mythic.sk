@@ -1,7 +1,9 @@
 options:
-	version: 1.0.0
+	version: 1.1.0
 
-	zeus: iron sword
+	changelog: "&l&nChangelog v1.1.0 23/02/2024&r%nl% - Added /update and version checking%nl% - Added changelog%nl% - Changed abilities to dyes%nl% - Increased damage of abilities%nl% - Changed ""Hyper"" to affect attack speed, not dig speed."
+
+	zeus: white dye
 	zeus.lc.name: "Lightning Dash"
 	zeus.lc.cooldown: 60 seconds
 	zeus.rc.name: "Lightning Bolt"
@@ -9,7 +11,7 @@ options:
 	zeus.src.name: "Thunderstorm"
 	zeus.src.cooldown: 180 seconds
 	
-	poseidon: trident
+	poseidon: cyan dye
 	poseidon.slc.name: "Tsunami"
 	poseidon.slc.cooldown: 120 seconds
 	poseidon.src.name: "Raindrop"
@@ -17,7 +19,7 @@ options:
 	poseidon.rc.name: "Dolphin"
 	poseidon.rc.cooldown: 120 seconds
 
-	hermes: rabbit foot
+	hermes: green dye
 	hermes.rc.name: "Hermes' Grace"
 	hermes.rc.cooldown: 120 seconds
 	hermes.lc.name: "Hyper"
@@ -25,26 +27,28 @@ options:
 	hermes.src.name: "Hermes' Curse"
 	hermes.src.cooldown: 180 seconds
 
-	ares: brush
+	ares: red dye
 	ares.lc.name: "Almighty"
 	ares.lc.cooldown: 120 seconds
 	ares.rc.name: "Ares' Zone"
 	ares.rc.cooldown: 120 seconds
 
-	helios: shears
+	helios: orange dye
 	helios.slc.name: "Sunray"
 	helios.slc.cooldown: 120 seconds
 	helios.rc.name: "Sun's Grace"
 	helios.rc.cooldown: 180 seconds
 	helios.p.name: "Sunlight"
 
-	hades: bone
+	hades: black dye
 	hades.rc.name: "Graveyard"
 	hades.rc.cooldown: 180 seconds
 	hades.lc.name: "Darkness"
 	hades.lc.cooldown: 60 seconds
 	hades.slc.name: "Death's Wish"
 	hades.slc.cooldown: 120 seconds
+
+	developer: "ab9289be-132a-4263-bced-4a11cc4b36ab"
 
 # -------- FUNCTIONS --------
 
@@ -65,7 +69,7 @@ function raycast(p: player, length: number, dmg: number):
 			loop-entity is not {_p}
 			if loop-entity does not have potion effect slowness:
 				apply slowness 2 to loop-entity for 30 seconds
-			damage loop-entity by {_dmg}
+			damage loop-entity by {_dmg}*1.5
 			stop #if you want your projectile to pierce entities, delete this line
 		loop blocks in radius 0.5 around {_rg%{_x}%}:
 			if loop-block is not tall grass, short grass, snow layer, air or water, sugar cane:
@@ -87,7 +91,7 @@ function raycastInvis(p: player, length: number):
 		loop entities in radius 1.75 around {_rg%{_x}%}:
 			loop-entity is not {_p}
 			strike lightning effect at location of loop-entity
-			damage loop-entity by 5
+			damage loop-entity by 7.5
 			stop #if you want your projectile to pierce entities, delete this line
 		loop blocks in radius 0.5 around {_rg%{_x}%}:
 			if loop-block is not tall grass, short grass, snow layer, air or water, sugar cane:
@@ -108,7 +112,7 @@ function raycastOrange(p: player, length: number):
 		show 4 orange dust at {_rg%{_x}%} #change color or particle type
 		loop entities in radius 1.75 around {_rg%{_x}%}:
 			loop-entity is not {_p}
-			damage loop-entity by 1
+			damage loop-entity by 1.5
 			stop #if you want your projectile to pierce entities, delete this line
 		loop blocks in radius 0.5 around {_rg%{_x}%}:
 			if loop-block is not tall grass, short grass, snow layer, air or water, sugar cane:
@@ -148,6 +152,19 @@ function particlering(p: player, s: number, h: number, pr: number):
 		set {_d} to {_d} - {_s}
 		add 6 to {_d}
 		wait 1 tick
+
+function compareVersions(v1s: string, v2s: string) :: number:
+	set {_v1::*} to {_v1s} split at "."
+	set {_v2::*} to {_v2s} split at "."
+	loop {_v1::*}:
+		set {_1} to loop-value parsed as number
+		set {_2} to {_v2::%loop-index%} parsed as number
+		if {_1} is not {_2}:
+			if {_1} is greater than {_2}:
+				return 1
+			else if {_1} is less than {_2}:
+				return 2
+	return 0
 
 # zeus
 
@@ -211,7 +228,7 @@ function poseidonsrc(p: player):
 		wait 15 ticks
 		loop entities where [input is within {_l1} and {_l2}]:
 			if loop-entity is not {_p}:
-				damage loop-entity by 4
+				damage loop-entity by 6
 				if loop-entity does not have potion effect slowness:
 					apply slowness to loop-entity for 30 seconds
 
@@ -243,9 +260,13 @@ function hermeslc(p: player):
 		play sound "minecraft:entity.villager.no" to {_p}
 		send action bar "&cYou can't use &a%{@hermes.lc.name}%&c for another &e%difference between {@hermes.lc.cooldown} and {_cooldown}%&c!" to {_p}
 	else:
-		set {mythic::%{_p}'s uuid%.hermes.lc.lastUsed} to now
-		apply haste 3 to {_p} for 20 seconds
+		#set {mythic::%{_p}'s uuid%.hermes.lc.lastUsed} to now
+		#apply haste 3 to {_p} for 20 seconds
+		set {_p}'s attack speed attribute to 5
 		play sound "minecraft:entity.player.levelup" to {_p}
+		wait 20*20 ticks
+		reset {_p}'s attack speed attribute
+		play sound "minecraft:entity.warden.death" to {_p}
 
 function hermessrc(p: player):
 	set {_cooldown} to difference between {mythic::%{_p}'s uuid%.hermes.src.lastUsed} and now
@@ -284,7 +305,7 @@ function aresrc(p: player):
 		set {_l2} to location of {_p} ~ vector(-15,-15,-15)
 		loop entities where [input is within {_l1} and {_l2}]:
 			if loop-entity is not {_p}:
-				damage loop-entity by 2
+				damage loop-entity by 3
 				apply weakness to loop-entity for 30 seconds
 
 # helios
@@ -378,7 +399,7 @@ function hadesslc(p: player):
 		set {_l2} to location of {_p} ~ vector(-10,-10,-10)
 		loop entities where [input is within {_l1} and {_l2}]:
 			if loop-entity is not {_p}:
-				damage loop-entity by 3
+				damage loop-entity by 4.5
 				apply wither 10 to loop-entity for 10 seconds
 
 
@@ -468,6 +489,13 @@ on damage by player:
 			hadeslc(attacker)
 			cancel event
 
+on load:
+	if {version} is not "{@version}":
+		send {@changelog} to {@developer} parsed as offline player
+		loop all players:
+			loop-player is op
+			send {@changelog} to loop-player
+
 # hades rc events
 
 every 1 second:
@@ -500,9 +528,19 @@ on death of wither skeleton:
 
 command /plugin:
 	trigger:
+		set {_dev} to {@developer} parsed as offline player
+		set {_check} to line 2 from url "https://github.com/SorkoPiko/MythicPlugin/raw/main/mythic.sk"
+		replace "	version: " with "" in {_check}
+		set {_latest} to compareVersions({_check}, "{@version}")
+		if {_latest} is 1:
+			set {_status} to "&c(outdated)"
+		else if {_latest} is 2:
+			set {_status} to "&e(newer)"
+		else if {_latest} is 0:
+			set {_status} to "(latest)"
 		send "&b&lMythic Plugin" to player
-		send "&4Developer: &aSorkoPiko" to player
-		send "&4Version: &a%"{@version}"%" to player
+		send "&eDeveloper: &a%{_dev}%" to player
+		send "&eVersion: &a%"{@version}"% %{_status}%" to player
 
 command /tool <string>:
 	permission: mythic.tool.create
@@ -527,3 +565,24 @@ command /tool <string>:
 			send "&aYou have been given the &eHades &atool!" to player
 		else:
 			send "Usage: /tool <zeus/poseidon/hermes/ares/helios/hades>" to player
+
+command /update:
+	trigger:
+		set {version} to "{@version}"
+		if player is {@developer} parsed as offline player:
+			set {_check} to line 2 from url "https://github.com/SorkoPiko/MythicPlugin/raw/main/mythic.sk"
+			replace "	version: " with "" in {_check}
+			set {_latest} to compareVersions({_check}, "{@version}")
+			send "&aCurrent Version: &e{@version}" to player
+			if {_latest} is 1:
+				send "&aDownloading update..." to player
+				#skutil download file from "https://github.com/SorkoPiko/MythicPlugin/raw/main/mythic.sk" to file "plugins/skript/scripts/mythic.sk"
+				send "&aUpdate downloaded!" to player
+				execute console command "sk reload mythic"
+			else if {_latest} is 2:
+				send "&eYou are using a newer version!" to player
+			else if {_latest} is 0:
+				send "&aYou are using the latest version!" to player
+		else:
+			send "&cYou do not have permission to use this command!" to player
+ 
