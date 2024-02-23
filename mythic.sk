@@ -1,7 +1,7 @@
 options:
-	version: 1.1.0
+	version: 1.1.1
 
-	changelog: "&l&nChangelog v1.1.0 23/02/2024&r%nl% - Added /update and version checking%nl% - Added changelog%nl% - Changed abilities to dyes%nl% - Increased damage of abilities%nl% - Changed ""Hyper"" to affect attack speed, not dig speed."
+	changelog: "&l&nChangelog v1.1.1 23/02/2024&r%nl% - Fixed bug with version variable not resetting%nl% - Re-added cooldown for ""Hyper"" ability"
 
 	zeus: white dye
 	zeus.lc.name: "Lightning Dash"
@@ -260,7 +260,7 @@ function hermeslc(p: player):
 		play sound "minecraft:entity.villager.no" to {_p}
 		send action bar "&cYou can't use &a%{@hermes.lc.name}%&c for another &e%difference between {@hermes.lc.cooldown} and {_cooldown}%&c!" to {_p}
 	else:
-		#set {mythic::%{_p}'s uuid%.hermes.lc.lastUsed} to now
+		set {mythic::%{_p}'s uuid%.hermes.lc.lastUsed} to now
 		#apply haste 3 to {_p} for 20 seconds
 		set {_p}'s attack speed attribute to 5
 		play sound "minecraft:entity.player.levelup" to {_p}
@@ -491,6 +491,7 @@ on damage by player:
 
 on load:
 	if {version} is not "{@version}":
+		set {version} to "{@version}"
 		send {@changelog} to {@developer} parsed as offline player
 		loop all players:
 			loop-player is op
