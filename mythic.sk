@@ -1,0 +1,529 @@
+options:
+	version: 1.0.0
+
+	zeus: iron sword
+	zeus.lc.name: "Lightning Dash"
+	zeus.lc.cooldown: 60 seconds
+	zeus.rc.name: "Lightning Bolt"
+	zeus.rc.cooldown: 90 seconds
+	zeus.src.name: "Thunderstorm"
+	zeus.src.cooldown: 180 seconds
+	
+	poseidon: trident
+	poseidon.slc.name: "Tsunami"
+	poseidon.slc.cooldown: 120 seconds
+	poseidon.src.name: "Raindrop"
+	poseidon.src.cooldown: 120 seconds
+	poseidon.rc.name: "Dolphin"
+	poseidon.rc.cooldown: 120 seconds
+
+	hermes: rabbit foot
+	hermes.rc.name: "Hermes' Grace"
+	hermes.rc.cooldown: 120 seconds
+	hermes.lc.name: "Hyper"
+	hermes.lc.cooldown: 180 seconds
+	hermes.src.name: "Hermes' Curse"
+	hermes.src.cooldown: 180 seconds
+
+	ares: brush
+	ares.lc.name: "Almighty"
+	ares.lc.cooldown: 120 seconds
+	ares.rc.name: "Ares' Zone"
+	ares.rc.cooldown: 120 seconds
+
+	helios: shears
+	helios.slc.name: "Sunray"
+	helios.slc.cooldown: 120 seconds
+	helios.rc.name: "Sun's Grace"
+	helios.rc.cooldown: 180 seconds
+	helios.p.name: "Sunlight"
+
+	hades: bone
+	hades.rc.name: "Graveyard"
+	hades.rc.cooldown: 180 seconds
+	hades.lc.name: "Darkness"
+	hades.lc.cooldown: 60 seconds
+	hades.slc.name: "Death's Wish"
+	hades.slc.cooldown: 120 seconds
+
+# -------- FUNCTIONS --------
+
+function raycast(p: player, length: number, dmg: number):
+	set {_x} to 0
+	set {_l} to 0
+	loop {_length}*4 times:   #loops as many times as long as the length from the function input
+		add 1 to {_x}
+		add 0.25 to {_l}
+		set {_rg%{_x}%} to location {_l} meters infront of {_p}
+		set {_rg%{_x}%} to location 1.62 meters above {_rg%{_x}%} #aligns with where player is looking better
+	# all of the locations are saved as soon as the function is called, effects such as particles can be applied afterwards.
+	set {_x} to 0
+	loop {_length}*4 times:
+		add 1 to {_x}
+		show 4 white dust at {_rg%{_x}%} #change color or particle type
+		loop entities in radius 1.75 around {_rg%{_x}%}:
+			loop-entity is not {_p}
+			if loop-entity does not have potion effect slowness:
+				apply slowness 2 to loop-entity for 30 seconds
+			damage loop-entity by {_dmg}
+			stop #if you want your projectile to pierce entities, delete this line
+		loop blocks in radius 0.5 around {_rg%{_x}%}:
+			if loop-block is not tall grass, short grass, snow layer, air or water, sugar cane:
+				stop #projectile does not go through blocks, but passes through expected blocks.
+
+function raycastInvis(p: player, length: number):
+	set {_x} to 0
+	set {_l} to 0
+	loop {_length}*4 times:   #loops as many times as long as the length from the function input
+		add 1 to {_x}
+		add 0.25 to {_l}
+		set {_rg%{_x}%} to location {_l} meters infront of {_p}
+		set {_rg%{_x}%} to location 1.62 meters above {_rg%{_x}%} #aligns with where player is looking better
+	# all of the locations are saved as soon as the function is called, effects such as particles can be applied afterwards.
+	set {_x} to 0
+	loop {_length}*4 times:
+		add 1 to {_x}
+		#show 4 blue dust at {_rg%{_x}%} change color or particle type
+		loop entities in radius 1.75 around {_rg%{_x}%}:
+			loop-entity is not {_p}
+			strike lightning effect at location of loop-entity
+			damage loop-entity by 5
+			stop #if you want your projectile to pierce entities, delete this line
+		loop blocks in radius 0.5 around {_rg%{_x}%}:
+			if loop-block is not tall grass, short grass, snow layer, air or water, sugar cane:
+				stop #projectile does not go through blocks, but passes through expected blocks.
+
+function raycastOrange(p: player, length: number):
+	set {_x} to 0
+	set {_l} to 0
+	loop {_length}*4 times:   #loops as many times as long as the length from the function input
+		add 1 to {_x}
+		add 0.25 to {_l}
+		set {_rg%{_x}%} to location {_l} meters infront of {_p}
+		set {_rg%{_x}%} to location 1.62 meters above {_rg%{_x}%} #aligns with where player is looking better
+	# all of the locations are saved as soon as the function is called, effects such as particles can be applied afterwards.
+	set {_x} to 0
+	loop {_length}*4 times:
+		add 1 to {_x}
+		show 4 orange dust at {_rg%{_x}%} #change color or particle type
+		loop entities in radius 1.75 around {_rg%{_x}%}:
+			loop-entity is not {_p}
+			damage loop-entity by 1
+			stop #if you want your projectile to pierce entities, delete this line
+		loop blocks in radius 0.5 around {_rg%{_x}%}:
+			if loop-block is not tall grass, short grass, snow layer, air or water, sugar cane:
+				stop #projectile does not go through blocks, but passes through expected blocks.
+
+function particlering(p: player, s: number, h: number, pr: number):
+	set {_s} to {_s} - 1 #size
+	set {_x} to 0 # yaw
+	set {_y} to 0 # height
+	set {_d} to 1 # distance
+	set {_lp} to location of {_p} # player location
+	play sound "ambient.underwater.exit" with volume 5 at {_lp} # play sound
+	loop {_s} times:
+		loop {_h} times:
+			set {_x} to 0
+			loop 360 times:
+				add 1 to {_x}
+				set {_v} to vector from yaw {_x} and pitch 0 # vector from yaw
+				set {_vl%{_x}%} to {_v} # save vector
+				set vector length of {_v} to ({_d}/2) # set vector length
+				set {_pa%{_x}%} to {_lp} offset by {_v} # set location
+				set {_pa%{_x}%} to location 0.75 + {_y} meters above {_pa%{_x}%} # set location
+			set {_x} to 0 # reset yaw
+			loop 360 times: # loop yaw
+				add 1 to {_x} # add 1 to yaw
+				show 1 blue crit at {_pa%{_x}%} # show particle
+				loop entities in radius 1.75 around {_pa%{_x}%}: # check for entities
+					loop-entity is not {_p} # ensure it is not player
+					show 1 witch spell at {_pa%{_x}%} # show particle
+					set vector length of {_vl%{_x}%} to {_pr} # set vector length
+					set loop-entity's velocity to {_vl%{_x}%} # set entity's velocity
+					push loop-entity upwards with force 1 # push entitiy upwards
+					play sound "block.bubble_column.upwards_inside" with volume 0.5 at {_pa%{_x}%} # play sound
+			add 1 to {_y}
+			add 1 to {_d}
+		set {_y} to 0
+		set {_d} to {_d} - {_s}
+		add 6 to {_d}
+		wait 1 tick
+
+# zeus
+
+function zeuslc(p: player):
+	set {_cooldown} to difference between {mythic::%{_p}'s uuid%.zeus.lc.lastUsed} and now
+	if {_cooldown} is less than {@zeus.lc.cooldown}:
+		play sound "minecraft:entity.villager.no" to {_p}
+		send action bar "&cYou can't use &a%{@zeus.lc.name}%&c for another &e%difference between {@zeus.lc.cooldown} and {_cooldown}%&c!" to {_p}
+	else:
+		set {mythic::%{_p}'s uuid%.zeus.lc.lastUsed} to now
+		push {_p} upwards with force 1
+		push {_p} in direction of {_p} with force 4
+		play sound "minecraft:entity.generic.explode" with volume 4 with pitch 0.56 at {_p}
+
+function zeusrc(p: player):
+	set {_cooldown} to difference between {mythic::%{_p}'s uuid%.zeus.rc.lastUsed} and now
+	if {_cooldown} is less than {@zeus.rc.cooldown}:
+		play sound "minecraft:entity.villager.no" to {_p}
+		send action bar "&cYou can't use &a%{@zeus.rc.name}%&c for another &e%difference between {@zeus.rc.cooldown} and {_cooldown}%&c!" to {_p}
+	else:
+		set {mythic::%{_p}'s uuid%.zeus.rc.lastUsed} to now
+		raycast({_p}, 25, 3)
+		play sound "minecraft:entity.lightning_bolt.thunder" at {_p}
+
+function zeussrc(p: player):
+	set {_cooldown} to difference between {mythic::%{_p}'s uuid%.zeus.src.lastUsed} and now
+	if {_cooldown} is less than {@zeus.src.cooldown}:
+		play sound "minecraft:entity.villager.no" to {_p}
+		send action bar "&cYou can't use &a%{@zeus.src.name}%&c for another &e%difference between {@zeus.src.cooldown} and {_cooldown}%&c!" to {_p}
+	else:
+		set {mythic::%{_p}'s uuid%.zeus.src.lastUsed} to now
+		raycastInvis({_p}, 25)
+
+# poseidon
+
+function poseidonslc(p: player):
+	set {_cooldown} to difference between {mythic::%{_p}'s uuid%.poseidon.slc.lastUsed} and now
+	if {_cooldown} is less than {@poseidon.slc.cooldown}:
+		play sound "minecraft:entity.villager.no" to {_p}
+		send action bar "&cYou can't use &a%{@poseidon.slc.name}%&c for another &e%difference between {@poseidon.slc.cooldown} and {_cooldown}%&c!" to {_p}
+	else:
+		set {mythic::%{_p}'s uuid%.poseidon.slc.lastUsed} to now
+		particlering({_p}, 10, 5, 1.5)
+
+function poseidonsrc(p: player):
+	set {_cooldown} to difference between {mythic::%{_p}'s uuid%.poseidon.src.lastUsed} and now
+	if {_cooldown} is less than {@poseidon.src.cooldown}:
+		play sound "minecraft:entity.villager.no" to {_p}
+		send action bar "&cYou can't use &a%{@poseidon.src.name}%&c for another &e%difference between {@poseidon.src.cooldown} and {_cooldown}%&c!" to {_p}
+	else:
+		set {mythic::%{_p}'s uuid%.poseidon.src.lastUsed} to now
+		play sound "minecraft:weather.rain" to {_p}
+		set {_amount} to a random integer between 20*6*6*6 and 40*6*6*6
+		loop {_amount} times:
+			set {_randomCoordX} to a random integer between -6 and 6
+			set {_randomCoordY} to a random integer between 6 and 18
+			set {_randomCoordZ} to a random integer between -6 and 6
+			show water drop at location of {_p} ~ vector({_randomCoordX},{_randomCoordY},{_randomCoordZ})
+		set {_l1} to location of {_p} ~ vector(6,6,6)
+		set {_l2} to location of {_p} ~ vector(-6,-6,-6)
+		wait 15 ticks
+		loop entities where [input is within {_l1} and {_l2}]:
+			if loop-entity is not {_p}:
+				damage loop-entity by 4
+				if loop-entity does not have potion effect slowness:
+					apply slowness to loop-entity for 30 seconds
+
+function poseidonrc(p: player):
+	set {_cooldown} to difference between {mythic::%{_p}'s uuid%.poseidon.rc.lastUsed} and now
+	if {_cooldown} is less than {@poseidon.rc.cooldown}:
+		play sound "minecraft:entity.villager.no" to {_p}
+		send action bar "&cYou can't use &a%{@poseidon.rc.name}%&c for another &e%difference between {@poseidon.rc.cooldown} and {_cooldown}%&c!" to {_p}
+	else:
+		set {mythic::%{_p}'s uuid%.poseidon.rc.lastUsed} to now
+		apply dolphin's grace 2 to {_p} for 60 seconds
+		play sound "minecraft:entity.dolphin.ambient" to {_p}
+
+# hermes
+
+function hermesrc(p: player):
+	set {_cooldown} to difference between {mythic::%{_p}'s uuid%.hermes.rc.lastUsed} and now
+	if {_cooldown} is less than {@hermes.rc.cooldown}:
+		play sound "minecraft:entity.villager.no" to {_p}
+		send action bar "&cYou can't use &a%{@hermes.rc.name}%&c for another &e%difference between {@hermes.rc.cooldown} and {_cooldown}%&c!" to {_p}
+	else:
+		set {mythic::%{_p}'s uuid%.hermes.rc.lastUsed} to now
+		apply speed 2 to {_p} for 30 seconds
+		play sound "minecraft:entity.player.levelup" to {_p}
+
+function hermeslc(p: player):
+	set {_cooldown} to difference between {mythic::%{_p}'s uuid%.hermes.lc.lastUsed} and now
+	if {_cooldown} is less than {@hermes.lc.cooldown}:
+		play sound "minecraft:entity.villager.no" to {_p}
+		send action bar "&cYou can't use &a%{@hermes.lc.name}%&c for another &e%difference between {@hermes.lc.cooldown} and {_cooldown}%&c!" to {_p}
+	else:
+		set {mythic::%{_p}'s uuid%.hermes.lc.lastUsed} to now
+		apply haste 3 to {_p} for 20 seconds
+		play sound "minecraft:entity.player.levelup" to {_p}
+
+function hermessrc(p: player):
+	set {_cooldown} to difference between {mythic::%{_p}'s uuid%.hermes.src.lastUsed} and now
+	if {_cooldown} is less than {@hermes.src.cooldown}:
+		play sound "minecraft:entity.villager.no" to {_p}
+		send action bar "&cYou can't use &a%{@hermes.src.name}%&c for another &e%difference between {@hermes.src.cooldown} and {_cooldown}%&c!" to {_p}
+	else:
+		set {mythic::%{_p}'s uuid%.hermes.src.lastUsed} to now
+		play sound "minecraft:entity.item.break" to {_p}
+		set {_l1} to location of {_p} ~ vector(10,10,10)
+		set {_l2} to location of {_p} ~ vector(-10,-10,-10)
+		loop entities where [input is within {_l1} and {_l2}]:
+			if loop-entity is not {_p}:
+				apply mining fatigue 2 to loop-entity for 1 minute
+
+# ares
+
+function areslc(p: player):
+	set {_cooldown} to difference between {mythic::%{_p}'s uuid%.ares.lc.lastUsed} and now
+	if {_cooldown} is less than {@ares.lc.cooldown}:
+		play sound "minecraft:entity.villager.no" to {_p}
+		send action bar "&cYou can't use &a%{@ares.lc.name}%&c for another &e%difference between {@ares.lc.cooldown} and {_cooldown}%&c!" to {_p}
+	else:
+		set {mythic::%{_p}'s uuid%.ares.lc.lastUsed} to now
+		apply strength 2 to {_p} for 30 seconds
+		play sound "minecraft:item.armor.equip_diamond" to {_p}
+
+function aresrc(p: player):
+	set {_cooldown} to difference between {mythic::%{_p}'s uuid%.ares.rc.lastUsed} and now
+	if {_cooldown} is less than {@ares.rc.cooldown}:
+		play sound "minecraft:entity.villager.no" to {_p}
+		send action bar "&cYou can't use &a%{@ares.rc.name}%&c for another &e%difference between {@ares.rc.cooldown} and {_cooldown}%&c!" to {_p}
+	else:
+		set {mythic::%{_p}'s uuid%.ares.rc.lastUsed} to now
+		set {_l1} to location of {_p} ~ vector(15,15,15)
+		set {_l2} to location of {_p} ~ vector(-15,-15,-15)
+		loop entities where [input is within {_l1} and {_l2}]:
+			if loop-entity is not {_p}:
+				damage loop-entity by 2
+				apply weakness to loop-entity for 30 seconds
+
+# helios
+
+function heliosslc(p: player):
+	set {_cooldown} to difference between {mythic::%{_p}'s uuid%.helios.slc.lastUsed} and now
+	if {_cooldown} is less than {@helios.slc.cooldown}:
+		play sound "minecraft:entity.villager.no" to {_p}
+		send action bar "&cYou can't use &a%{@helios.slc.name}%&c for another &e%difference between {@helios.slc.cooldown} and {_cooldown}%&c!" to {_p}
+	else:
+		set {mythic::%{_p}'s uuid%.helios.slc.lastUsed} to now
+		loop 5 times:
+			play sound "minecraft:entity.blaze.hurt" to {_p}
+			raycastOrange({_p}, 25)
+			wait 10 ticks
+
+function heliosrc(p: player):
+	set {_cooldown} to difference between {mythic::%{_p}'s uuid%.helios.rc.lastUsed} and now
+	if {_cooldown} is less than {@helios.rc.cooldown}:
+		play sound "minecraft:entity.villager.no" to {_p}
+		send action bar "&cYou can't use &a%{@helios.slc.name}%&c for another &e%difference between {@helios.rc.cooldown} and {_cooldown}%&c!" to {_p}
+	else:
+		set {mythic::%{_p}'s uuid%.helios.rc.lastUsed} to now
+		apply speed to {_p} for 40 seconds
+		apply strength 2 to {_p} for 40 seconds
+		play sound "minecraft:item.armor.equip_diamond" to {_p}
+
+#helios passive
+every 1 second:
+	loop all players:
+		if loop-player's held item or loop-player's offhand item is {@helios}:
+			if time in loop-player's world is between 5:00 and 18:30:
+				if sunlight level at the loop-player is greater than 14:
+					set {_difference} to 13 - loop-player's max health
+					set loop-player's max health to 13
+					if {_difference} is greater than 0:
+						heal loop-player by {_difference} hearts
+				else:
+					set loop-player's max health to 7
+		else if loop-player's max health is not 10:
+			set {_difference} to 10 - loop-player's max health
+			set loop-player's max health to 10
+			if {_difference} is greater than 0:
+				heal loop-player by {_difference} hearts
+
+# hades
+
+function hadesrc(p: player):
+	set {_cooldown} to difference between {mythic::%{_p}'s uuid%.hades.rc.lastUsed} and now
+	if {_cooldown} is less than {@hades.rc.cooldown}:
+		play sound "minecraft:entity.villager.no" to {_p}
+		send action bar "&cYou can't use &a%{@hades.rc.name}%&c for another &e%difference between {@hades.rc.cooldown} and {_cooldown}%&c!" to {_p}
+	else:
+		set {mythic::%{_p}'s uuid%.hades.rc.lastUsed} to now
+		loop 8 times:
+			spawn wither skeleton at location of {_p}
+			set {_ws} to last spawned entity
+			set name of {_ws} to "&a%{_p}%'s &4Undead"
+			loop all players in radius 10 around {_p}:
+				if loop-player is not {_p}:
+					if loop-player is not {_ws}:
+						set target of {_ws} to loop-player
+			add {_ws} to {skeletons::*}
+			set {wsOwners::%{_ws}%} to {_p}
+		play sound "minecraft:entity.wither.spawn" at {_p}
+
+function hadeslc(p: player):
+	set {_cooldown} to difference between {mythic::%{_p}'s uuid%.hades.lc.lastUsed} and now
+	if {_cooldown} is less than {@hades.lc.cooldown}:
+		play sound "minecraft:entity.villager.no" to {_p}
+		send action bar "&cYou can't use &a%{@hades.lc.name}%&c for another &e%difference between {@hades.lc.cooldown} and {_cooldown}%&c!" to {_p}
+	else:
+		set {mythic::%{_p}'s uuid%.hades.lc.lastUsed} to now
+		play sound "minecraft:entity.enderman.teleport" to {_p}
+		set {_l1} to location of {_p} ~ vector(5,5,5)
+		set {_l2} to location of {_p} ~ vector(-5,-5,-5)
+		loop entities where [input is within {_l1} and {_l2}]:
+			if loop-entity is not {_p}:
+				apply darkness to loop-entity for 10 seconds
+				apply blindness to loop-entity for 10 seconds
+
+function hadesslc(p: player):
+	set {_cooldown} to difference between {mythic::%{_p}'s uuid%.hades.slc.lastUsed} and now
+	if {_cooldown} is less than {@hades.slc.cooldown}:
+		play sound "minecraft:entity.villager.no" to {_p}
+		send action bar "&cYou can't use &a%{@hades.slc.name}%&c for another &e%difference between {@hades.slc.cooldown} and {_cooldown}%&c!" to {_p}
+	else:
+		set {mythic::%{_p}'s uuid%.hades.slc.lastUsed} to now
+		play sound "minecraft:entity.blaze.hurt" to {_p}
+		set {_l1} to location of {_p} ~ vector(10,10,10)
+		set {_l2} to location of {_p} ~ vector(-10,-10,-10)
+		loop entities where [input is within {_l1} and {_l2}]:
+			if loop-entity is not {_p}:
+				damage loop-entity by 3
+				apply wither 10 to loop-entity for 10 seconds
+
+
+# -------- EVENTS --------
+
+on leftclick:
+	custom model data of player's tool is 1
+	if player is sneaking:
+		if player's tool is {@poseidon}:
+			poseidonslc(player)
+			cancel event
+		else if player's tool is {@helios}:
+			heliosslc(player)
+			cancel event
+		else if player's tool is {@hades}:
+			hadesslc(player)
+			cancel event
+	else:
+		if player's tool is {@zeus}:
+			zeuslc(player)
+			cancel event
+		else if player's tool is {@hermes}:
+			hermeslc(player)
+			cancel event
+		else if player's tool is {@ares}:
+			areslc(player)
+			cancel event
+		else if player's tool is {@hades}:
+			hadeslc(player)
+			cancel event
+
+on rightclick:
+	custom model data of player's tool is 1
+	if player is sneaking:
+		if player's tool is {@zeus}:
+			zeussrc(player)
+			cancel event
+		else if player's tool is {@poseidon}:
+			poseidonsrc(player)
+			cancel event
+		else if player's tool is {@hermes}:
+			hermessrc(player)
+			cancel event
+	else:
+		if player's tool is {@zeus}:
+			zeusrc(player)
+			cancel event
+		else if player's tool is {@poseidon}:
+			poseidonrc(player)
+			cancel event
+		else if player's tool is {@hermes}:
+			hermesrc(player)
+			cancel event
+		else if player's tool is {@ares}:
+			aresrc(player)
+			cancel event
+		else if player's tool is {@helios}:
+			heliosrc(player)
+			cancel event
+		else if player's tool is {@hades}:
+			hadesrc(player)
+			cancel event
+
+on damage by player:
+	custom model data of attacker's tool is 1
+	if attacker is sneaking:
+		if attacker's tool is {@poseidon}:
+			poseidonslc(attacker)
+			cancel event
+		else if attacker's tool is {@helios}:
+			heliosslc(attacker)
+			cancel event
+		else if attacker's tool is {@hades}:
+			hadesslc(attacker)
+			cancel event
+	else:
+		if attacker's tool is {@zeus}:
+			zeuslc(attacker)
+			cancel event
+		else if attacker's tool is {@hermes}:
+			hermeslc(attacker)
+			cancel event
+		else if attacker's tool is {@ares}:
+			areslc(attacker)
+			cancel event
+		else if attacker's tool is {@hades}:
+			hadeslc(attacker)
+			cancel event
+
+# hades rc events
+
+every 1 second:
+	loop {skeletons::*}:
+		if loop-value's target is not set:
+			make loop-value pathfind to {wsOwners::%loop-value%}
+
+on target:
+	loop {skeletons::*}:
+		event-entity is loop-value
+		if target is {wsOwners::%event-entity%}:
+			clear target of event-entity
+			loop all players in radius 10 around event-entity:
+				if loop-player is not {wsOwners::%event-entity%}:
+					if loop-player is not event-entity:
+						set target of event-entity to loop-player
+			loop all players in radius 10 around {wsOwners::%event-entity%}:
+				if loop-player is not {wsOwners::%event-entity%}:
+					if loop-player is not event-entity:
+						set target of event-entity to loop-player
+
+on death of wither skeleton:
+	loop {skeletons::*}:
+		victim is loop-value
+		send "&aYour &8wither skeleton &cdied!" to {wsOwners::%victim%}
+		remove victim from {skeletons::*}
+		delete {wsOwners::%victim%}
+
+# -------- COMMANDS --------
+
+command /plugin:
+	trigger:
+		send "&b&lMythic Plugin" to player
+		send "&4Developer: &aSorkoPiko" to player
+		send "&4Version: &a%"{@version}"%" to player
+
+command /tool <string>:
+	permission: mythic.tool.create
+	trigger:
+		if arg-1 is "zeus":
+			give {@zeus} with custom model data 1 named "&rAspect of Zeus" to player
+			send "&aYou have been given the &eZeus &atool!" to player
+		else if arg-1 is "poseidon":
+			give {@poseidon} with custom model data 1 named "&rAspect of Poseidon" to player
+			send "&aYou have been given the &ePoseidon &atool!" to player
+		else if arg-1 is "hermes":
+			give {@hermes} with custom model data 1 named "&rAspect of Hermes" to player
+			send "&aYou have been given the &eHermes &atool!" to player
+		else if arg-1 is "ares":
+			give {@ares} with custom model data 1 named "&rAspect of Ares" to player
+			send "&aYou have been given the &eAres &atool!" to player
+		else if arg-1 is "helios":
+			give {@helios} with custom model data 1 named "&rAspect of Helios" to player
+			send "&aYou have been given the &eHelios &atool!" to player
+		else if arg-1 is "hades":
+			give {@hades} with custom model data 1 named "&rAspect of Hades" to player
+			send "&aYou have been given the &eHades &atool!" to player
+		else:
+			send "Usage: /tool <zeus/poseidon/hermes/ares/helios/hades>" to player
