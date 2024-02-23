@@ -1,7 +1,7 @@
 options:
-	version: 1.2.4
+	version: 1.2.5
 
-	changelog: "&l&nChangelog v1.2.4 23/02/2024&r%nl% - Players now keep their abilities on death"
+	changelog: "&l&nChangelog v1.2.5 23/02/2024&r%nl% - Fixed accidental debug broadcast on death"
 
 	zeus: white dye
 	zeus.lc.name: "Lightning Dash"
@@ -507,7 +507,6 @@ on damage by player:
 on death of player:
 	loop drops:
 		custom model data of loop-item is 1
-		broadcast loop-item
 		if loop-item is {@zeus}:
 			remove loop-item from drops
 			wait 1 tick
