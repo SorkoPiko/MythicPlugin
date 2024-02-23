@@ -1,7 +1,7 @@
 options:
-	version: 1.2.0
+	version: 1.2.1
 
-	changelog: "&l&nChangelog v1.2.0 23/02/2024&r%nl% - Fixed updater"
+	changelog: "&l&nChangelog v1.2.1 23/02/2024&r%nl% - You now spawn with an ability%nl% - You can now toggle abilities%nl% - Improved the /tool command"
 
 	zeus: white dye
 	zeus.lc.name: "Lightning Dash"
@@ -165,6 +165,16 @@ function compareVersions(v1s: string, v2s: string) :: number:
 			else if {_1} is less than {_2}:
 				return 2
 	return 0
+
+function toggleAbiltiies(p: player):
+	if {abilities} is true:
+		set {abilities} to false
+		send "&cYou have toggled abilities off!" to {_p}
+	else:
+		set {abilities} to true
+		send "&aYou have toggled abilities on!" to {_p}
+
+# -------- ABILITIES --------
 
 # zeus
 
@@ -406,88 +416,91 @@ function hadesslc(p: player):
 # -------- EVENTS --------
 
 on leftclick:
-	custom model data of player's tool is 1
-	if player is sneaking:
-		if player's tool is {@poseidon}:
-			poseidonslc(player)
-			cancel event
-		else if player's tool is {@helios}:
-			heliosslc(player)
-			cancel event
-		else if player's tool is {@hades}:
-			hadesslc(player)
-			cancel event
-	else:
-		if player's tool is {@zeus}:
-			zeuslc(player)
-			cancel event
-		else if player's tool is {@hermes}:
-			hermeslc(player)
-			cancel event
-		else if player's tool is {@ares}:
-			areslc(player)
-			cancel event
-		else if player's tool is {@hades}:
-			hadeslc(player)
-			cancel event
+	if {abilities} is true:
+		custom model data of player's tool is 1
+		if player is sneaking:
+			if player's tool is {@poseidon}:
+				poseidonslc(player)
+				cancel event
+			else if player's tool is {@helios}:
+				heliosslc(player)
+				cancel event
+			else if player's tool is {@hades}:
+				hadesslc(player)
+				cancel event
+		else:
+			if player's tool is {@zeus}:
+				zeuslc(player)
+				cancel event
+			else if player's tool is {@hermes}:
+				hermeslc(player)
+				cancel event
+			else if player's tool is {@ares}:
+				areslc(player)
+				cancel event
+			else if player's tool is {@hades}:
+				hadeslc(player)
+				cancel event
 
 on rightclick:
-	custom model data of player's tool is 1
-	if player is sneaking:
-		if player's tool is {@zeus}:
-			zeussrc(player)
-			cancel event
-		else if player's tool is {@poseidon}:
-			poseidonsrc(player)
-			cancel event
-		else if player's tool is {@hermes}:
-			hermessrc(player)
-			cancel event
-	else:
-		if player's tool is {@zeus}:
-			zeusrc(player)
-			cancel event
-		else if player's tool is {@poseidon}:
-			poseidonrc(player)
-			cancel event
-		else if player's tool is {@hermes}:
-			hermesrc(player)
-			cancel event
-		else if player's tool is {@ares}:
-			aresrc(player)
-			cancel event
-		else if player's tool is {@helios}:
-			heliosrc(player)
-			cancel event
-		else if player's tool is {@hades}:
-			hadesrc(player)
-			cancel event
+	if {abilities} is true:
+		custom model data of player's tool is 1
+		if player is sneaking:
+			if player's tool is {@zeus}:
+				zeussrc(player)
+				cancel event
+			else if player's tool is {@poseidon}:
+				poseidonsrc(player)
+				cancel event
+			else if player's tool is {@hermes}:
+				hermessrc(player)
+				cancel event
+		else:
+			if player's tool is {@zeus}:
+				zeusrc(player)
+				cancel event
+			else if player's tool is {@poseidon}:
+				poseidonrc(player)
+				cancel event
+			else if player's tool is {@hermes}:
+				hermesrc(player)
+				cancel event
+			else if player's tool is {@ares}:
+				aresrc(player)
+				cancel event
+			else if player's tool is {@helios}:
+				heliosrc(player)
+				cancel event
+			else if player's tool is {@hades}:
+				hadesrc(player)
+				cancel event
 
 on damage by player:
-	custom model data of attacker's tool is 1
-	if attacker is sneaking:
-		if attacker's tool is {@poseidon}:
-			poseidonslc(attacker)
-			cancel event
-		else if attacker's tool is {@helios}:
-			heliosslc(attacker)
-			cancel event
-		else if attacker's tool is {@hades}:
-			hadesslc(attacker)
-			cancel event
-	else:
-		if attacker's tool is {@zeus}:
-			zeuslc(attacker)
-			cancel event
-		else if attacker's tool is {@hermes}:
-			hermeslc(attacker)
-			cancel event
-		else if attacker's tool is {@ares}:
-			areslc(attacker)
-			cancel event
-		else if attacker's tool is {@hades}:
-			hadeslc(attacker)
-			cancel event
+	if {abilities} is true:
+		custom model data of attacker's tool is 1
+		if attacker is sneaking:
+			if attacker's tool is {@poseidon}:
+				poseidonslc(attacker)
+				cancel event
+			else if attacker's tool is {@helios}:
+				heliosslc(attacker)
+				cancel event
+			else if attacker's tool is {@hades}:
+				hadesslc(attacker)
+				cancel event
+		else:
+			if attacker's tool is {@zeus}:
+				zeuslc(attacker)
+				cancel event
+			else if attacker's tool is {@hermes}:
+				hermeslc(attacker)
+				cancel event
+			else if attacker's tool is {@ares}:
+				areslc(attacker)
+				cancel event
+			else if attacker's tool is {@hades}:
+				hadeslc(attacker)
+				cancel event
 
 on load:
 	if {version} is not "{@version}":
@@ -497,6 +510,13 @@ on load:
 			loop-player is op
 			send {@changelog} to loop-player
 		set {dev} to {@developer}
+	if {abilityList} is not set:
+		set {abilityList::*} to "zeus", "poseidon", "hermes", "ares", "helios", and "hades"
+
+on join:
+	if {playerAbilities::%player's uuid%} is not set:
+		set {playerAbilities::%player's uuid%} to random element of {abilityList::*}
+		execute console command "tool %{playerAbilities::%player's uuid%}% %player%"
 
 # hades rc events
 
@@ -545,26 +565,41 @@ command /plugin:
 		send "&eDeveloper: &a%{_dev}%" to player
 		send "&eVersion: &a%"{@version}"% %{_status}%" to player
 
-command /tool <string>:
+command /abilitytoggle:
+	trigger:
+		if player is not op:
+			if player is not {@developer} parsed as offline player:
+				send "&cYou do not have permission to use this command!" to player
+			else:
+				toggleAbiltiies(player)
+		else:
+			toggleAbiltiies(player)
+
+
+command /tool <string> [<player>]:
 	permission: mythic.tool.create
 	trigger:
+		if arg-2 is set:
+			set {_p} to arg-2
+		else:
+			set {_p} to player
 		if arg-1 is "zeus":
-			give {@zeus} with custom model data 1 named "&rAspect of Zeus" to player
-			send "&aYou have been given the &eZeus &atool!" to player
+			give {@zeus} with custom model data 1 named "&rAspect of Zeus" to {_p}
+			send "&aYou have been given the &eZeus &atool!" to {_p}
 		else if arg-1 is "poseidon":
-			give {@poseidon} with custom model data 1 named "&rAspect of Poseidon" to player
-			send "&aYou have been given the &ePoseidon &atool!" to player
+			give {@poseidon} with custom model data 1 named "&rAspect of Poseidon" to {_p}
+			send "&aYou have been given the &ePoseidon &atool!" to {_p}
 		else if arg-1 is "hermes":
-			give {@hermes} with custom model data 1 named "&rAspect of Hermes" to player
-			send "&aYou have been given the &eHermes &atool!" to player
+			give {@hermes} with custom model data 1 named "&rAspect of Hermes" to {_p}
+			send "&aYou have been given the &eHermes &atool!" to {_p}
 		else if arg-1 is "ares":
-			give {@ares} with custom model data 1 named "&rAspect of Ares" to player
-			send "&aYou have been given the &eAres &atool!" to player
+			give {@ares} with custom model data 1 named "&rAspect of Ares" to {_p}
+			send "&aYou have been given the &eAres &atool!" to {_p}
 		else if arg-1 is "helios":
-			give {@helios} with custom model data 1 named "&rAspect of Helios" to player
-			send "&aYou have been given the &eHelios &atool!" to player
+			give {@helios} with custom model data 1 named "&rAspect of Helios" to {_p}
+			send "&aYou have been given the &eHelios &atool!" to {_p}
 		else if arg-1 is "hades":
-			give {@hades} with custom model data 1 named "&rAspect of Hades" to player
-			send "&aYou have been given the &eHades &atool!" to player
+			give {@hades} with custom model data 1 named "&rAspect of Hades" to {_p}
+			send "&aYou have been given the &eHades &atool!" to {_p}
 		else:
 			send "Usage: /tool <zeus/poseidon/hermes/ares/helios/hades>" to player
