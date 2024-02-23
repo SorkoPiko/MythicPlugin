@@ -1,7 +1,7 @@
 options:
-	version: 1.2.5
+	version: 1.2.6
 
-	changelog: "&l&nChangelog v1.2.5 23/02/2024&r%nl% - Fixed accidental debug broadcast on death"
+	changelog: "&l&nChangelog v1.2.6 23/02/2024&r%nl% - Fixed accidental debug broadcast on join"
 
 	zeus: white dye
 	zeus.lc.name: "Lightning Dash"
@@ -546,7 +546,6 @@ on load:
 on join:
 	if {playerAbilities::%player's uuid%} is not set:
 		set {playerAbilities::%player's uuid%} to random element of {abilityList::*}
-		broadcast "ability: %{playerAbilities::%player's uuid%}%"
 		execute console command "tool %{playerAbilities::%player's uuid%}% %player%"
 
 # hades rc events
