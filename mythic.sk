@@ -1,7 +1,7 @@
 options:
-	version: 1.2.3
+	version: 1.2.4
 
-	changelog: "&l&nChangelog v1.2.3 23/02/2024&r%nl% - You can now reset the join ability list"
+	changelog: "&l&nChangelog v1.2.4 23/02/2024&r%nl% - Players now keep their abilities on death"
 
 	zeus: white dye
 	zeus.lc.name: "Lightning Dash"
@@ -503,6 +503,35 @@ on damage by player:
 			else if attacker's tool is {@hades}:
 				hadeslc(attacker)
 				cancel event
+
+on death of player:
+	loop drops:
+		custom model data of loop-item is 1
+		broadcast loop-item
+		if loop-item is {@zeus}:
+			remove loop-item from drops
+			wait 1 tick
+			add loop-item to victim's inventory
+		else if loop-item is {@poseidon}:
+			remove loop-item from drops
+			wait 1 tick
+			add loop-item to victim's inventory
+		else if loop-item is {@hermes}:
+			remove loop-item from drops
+			wait 1 tick
+			add loop-item to victim's inventory
+		else if loop-item is {@ares}:
+			remove loop-item from drops
+			wait 1 tick
+			add loop-item to victim's inventory
+		else if loop-item is {@helios}:
+			remove loop-item from drops
+			wait 1 tick
+			add loop-item to victim's inventory
+		else if loop-item is {@hades}:
+			remove loop-item from drops
+			wait 1 tick
+			add loop-item to victim's inventory
 
 on load:
 	if {version} is not "{@version}":
