@@ -1,7 +1,7 @@
 options:
-	version: 1.2.2
+	version: 1.2.3
 
-	changelog: "&l&nChangelog v1.2.2 23/02/2024&r%nl% - Added debug command to resolve issues"
+	changelog: "&l&nChangelog v1.2.3 23/02/2024&r%nl% - You can now reset the join ability list"
 
 	zeus: white dye
 	zeus.lc.name: "Lightning Dash"
@@ -354,6 +354,8 @@ every 1 second:
 					if {_difference} is greater than 0:
 						heal loop-player by {_difference} hearts
 				else:
+					set {_difference} to loop-player's max health - 7
+					damage loop-player by {_difference}
 					set loop-player's max health to 7
 		else if loop-player's max health is not 10:
 			set {_difference} to 10 - loop-player's max health
@@ -609,3 +611,13 @@ command /debug <string>:
 	trigger:
 		if player is {@developer} parsed as offline player:
 			execute console command arg-1
+
+command /resetjoin [<player>]:
+	permission: mythic.resetjoin
+	trigger:
+		if arg-1 is not set:
+			clear {playerAbilities::*}
+			send "&aYou have reset the join ability list!" to player
+		else:
+			clear {playerAbilities::%arg-1's uuid%}
+			send "&aYou have reset the join ability list for &e%arg-1%&a!" to player
