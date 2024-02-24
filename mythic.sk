@@ -1,7 +1,7 @@
 options:
-	version: 1.2.7
+	version: 1.2.8
 
-	changelog: "&l&nChangelog v1.2.7 23/02/2024&r%nl% - Fix dupe on death"
+	changelog: "&l&nChangelog v1.2.8 24/02/2024&r%nl% - Remove Graveyard enemy drops, to avoid farming"
 
 	zeus: white dye
 	zeus.lc.name: "Lightning Dash"
@@ -569,6 +569,7 @@ on target:
 on death of wither skeleton:
 	loop {skeletons::*}:
 		victim is loop-value
+		clear drops
 		send "&aYour &8wither skeleton &cdied!" to {wsOwners::%victim%}
 		remove victim from {skeletons::*}
 		delete {wsOwners::%victim%}
