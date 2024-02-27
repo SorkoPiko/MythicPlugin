@@ -1,7 +1,7 @@
 options:
-	version: 1.2.8
+	version: 1.3.0
 
-	changelog: "&l&nChangelog v1.2.8 24/02/2024&r%nl% - Remove Graveyard enemy drops, to avoid farming"
+	changelog: "&l&nChangelog v1.3.0 27/02/2024&r%nl% - Added a Reroll Book, to reroll your current ability (requires skBee)%nl% - There is now a global ability cooldown per player, so players can't spam all their abilities at once%nl% - You can no longer drop abilities%nl% - Minor improvements to raycasting functions"
 
 	zeus: white dye
 	zeus.lc.name: "Lightning Dash"
@@ -48,6 +48,10 @@ options:
 	hades.slc.name: "Death's Wish"
 	hades.slc.cooldown: 120 seconds
 
+	reroll: knowledge book
+
+	globalCooldown: 10 seconds
+
 	developer: "ab9289be-132a-4263-bced-4a11cc4b36ab"
 
 # -------- FUNCTIONS --------
@@ -72,7 +76,7 @@ function raycast(p: player, length: number, dmg: number):
 			damage loop-entity by {_dmg}*1.5
 			stop #if you want your projectile to pierce entities, delete this line
 		loop blocks in radius 0.5 around {_rg%{_x}%}:
-			if loop-block is not tall grass, short grass, snow layer, air or water, sugar cane:
+			if loop-block is not passable:
 				stop #projectile does not go through blocks, but passes through expected blocks.
 
 function raycastInvis(p: player, length: number):
@@ -94,7 +98,7 @@ function raycastInvis(p: player, length: number):
 			damage loop-entity by 7.5
 			stop #if you want your projectile to pierce entities, delete this line
 		loop blocks in radius 0.5 around {_rg%{_x}%}:
-			if loop-block is not tall grass, short grass, snow layer, air or water, sugar cane:
+			if loop-block is not passable:
 				stop #projectile does not go through blocks, but passes through expected blocks.
 
 function raycastOrange(p: player, length: number):
@@ -115,7 +119,7 @@ function raycastOrange(p: player, length: number):
 			damage loop-entity by 1.5
 			stop #if you want your projectile to pierce entities, delete this line
 		loop blocks in radius 0.5 around {_rg%{_x}%}:
-			if loop-block is not tall grass, short grass, snow layer, air or water, sugar cane:
+			if loop-block is not passable:
 				stop #projectile does not go through blocks, but passes through expected blocks.
 
 function particlering(p: player, s: number, h: number, pr: number):
@@ -174,58 +178,134 @@ function toggleAbiltiies(p: player):
 		set {abilities} to true
 		send "&aYou have toggled abilities on!" to {_p}
 
+function itemToName(i: item) :: string:
+	if {_i} is {@zeus}:
+		return "zeus"
+	else if {_i} is {@poseidon}:
+		return "poseidon"
+	else if {_i} is {@hermes}:
+		return "hermes"
+	else if {_i} is {@ares}:
+		return "ares"
+	else if {_i} is {@helios}:
+		return "helios"
+	else if {_i} is {@hades}:
+		return "hades"
+	else:
+		return "none"
+
+function nameToItem(s: string) :: item:
+	if {_s} is "zeus":
+		return {@zeus}
+	else if {_s} is "poseidon":
+		return {@poseidon}
+	else if {_s} is "hermes":
+		return {@hermes}
+	else if {_s} is "ares":
+		return {@ares}
+	else if {_s} is "helios":
+		return {@helios}
+	else if {_s} is "hades":
+		return {@hades}
+
+function tool(t: string) :: item:
+	if {_t} is "zeus":
+		return {@zeus} with custom model data 1 named "&rAspect of Zeus"
+	else if {_t} is "poseidon":
+		return {@poseidon} with custom model data 1 named "&rAspect of Poseidon"
+	else if {_t} is "hermes":
+		return {@hermes} with custom model data 1 named "&rAspect of Hermes"
+	else if {_t} is "ares":
+		return {@ares} with custom model data 1 named "&rAspect of Ares"
+	else if {_t} is "helios":
+		return {@helios} with custom model data 1 named "&rAspect of Helios"
+	else if {_t} is "hades":
+		return {@hades} with custom model data 1 named "&rAspect of Hades"
+	else if {_t} is "reroll":
+		return {@reroll} with custom model data 1 named "&aReroll Book"
+
 # -------- ABILITIES --------
 
 # zeus
 
 function zeuslc(p: player):
 	set {_cooldown} to difference between {mythic::%{_p}'s uuid%.zeus.lc.lastUsed} and now
+	set {_gCooldown} to difference between {mythic::%{_p}'s uuid%.cooldown} and now
+	if {_gCooldown} is less than {@globalCooldown}:
+		play sound "minecraft:entity.villager.no" to {_p}
+		send action bar "&cYou can't use abilities for another &e%difference between {@globalCooldown} and {_gCooldown}%&c!" to {_p}
+		stop
 	if {_cooldown} is less than {@zeus.lc.cooldown}:
 		play sound "minecraft:entity.villager.no" to {_p}
 		send action bar "&cYou can't use &a%{@zeus.lc.name}%&c for another &e%difference between {@zeus.lc.cooldown} and {_cooldown}%&c!" to {_p}
 	else:
 		set {mythic::%{_p}'s uuid%.zeus.lc.lastUsed} to now
+		set {mythic::%{_p}'s uuid%.cooldown} to now
 		push {_p} upwards with force 1
 		push {_p} in direction of {_p} with force 4
 		play sound "minecraft:entity.generic.explode" with volume 4 with pitch 0.56 at {_p}
 
 function zeusrc(p: player):
 	set {_cooldown} to difference between {mythic::%{_p}'s uuid%.zeus.rc.lastUsed} and now
+	set {_gCooldown} to difference between {mythic::%{_p}'s uuid%.cooldown} and now
+	if {_gCooldown} is less than {@globalCooldown}:
+		play sound "minecraft:entity.villager.no" to {_p}
+		send action bar "&cYou can't use abilities for another &e%difference between {@globalCooldown} and {_gCooldown}%&c!" to {_p}
+		stop
 	if {_cooldown} is less than {@zeus.rc.cooldown}:
 		play sound "minecraft:entity.villager.no" to {_p}
 		send action bar "&cYou can't use &a%{@zeus.rc.name}%&c for another &e%difference between {@zeus.rc.cooldown} and {_cooldown}%&c!" to {_p}
 	else:
 		set {mythic::%{_p}'s uuid%.zeus.rc.lastUsed} to now
+		set {mythic::%{_p}'s uuid%.cooldown} to now
 		raycast({_p}, 25, 3)
 		play sound "minecraft:entity.lightning_bolt.thunder" at {_p}
 
 function zeussrc(p: player):
 	set {_cooldown} to difference between {mythic::%{_p}'s uuid%.zeus.src.lastUsed} and now
+	set {_gCooldown} to difference between {mythic::%{_p}'s uuid%.cooldown} and now
+	if {_gCooldown} is less than {@globalCooldown}:
+		play sound "minecraft:entity.villager.no" to {_p}
+		send action bar "&cYou can't use abilities for another &e%difference between {@globalCooldown} and {_gCooldown}%&c!" to {_p}
+		stop
 	if {_cooldown} is less than {@zeus.src.cooldown}:
 		play sound "minecraft:entity.villager.no" to {_p}
 		send action bar "&cYou can't use &a%{@zeus.src.name}%&c for another &e%difference between {@zeus.src.cooldown} and {_cooldown}%&c!" to {_p}
 	else:
 		set {mythic::%{_p}'s uuid%.zeus.src.lastUsed} to now
+		set {mythic::%{_p}'s uuid%.cooldown} to now
 		raycastInvis({_p}, 25)
 
 # poseidon
 
 function poseidonslc(p: player):
 	set {_cooldown} to difference between {mythic::%{_p}'s uuid%.poseidon.slc.lastUsed} and now
+	set {_gCooldown} to difference between {mythic::%{_p}'s uuid%.cooldown} and now
+	if {_gCooldown} is less than {@globalCooldown}:
+		play sound "minecraft:entity.villager.no" to {_p}
+		send action bar "&cYou can't use abilities for another &e%difference between {@globalCooldown} and {_gCooldown}%&c!" to {_p}
+		stop
 	if {_cooldown} is less than {@poseidon.slc.cooldown}:
 		play sound "minecraft:entity.villager.no" to {_p}
 		send action bar "&cYou can't use &a%{@poseidon.slc.name}%&c for another &e%difference between {@poseidon.slc.cooldown} and {_cooldown}%&c!" to {_p}
 	else:
 		set {mythic::%{_p}'s uuid%.poseidon.slc.lastUsed} to now
+		set {mythic::%{_p}'s uuid%.cooldown} to now
 		particlering({_p}, 10, 5, 1.5)
 
 function poseidonsrc(p: player):
 	set {_cooldown} to difference between {mythic::%{_p}'s uuid%.poseidon.src.lastUsed} and now
+	set {_gCooldown} to difference between {mythic::%{_p}'s uuid%.cooldown} and now
+	if {_gCooldown} is less than {@globalCooldown}:
+		play sound "minecraft:entity.villager.no" to {_p}
+		send action bar "&cYou can't use abilities for another &e%difference between {@globalCooldown} and {_gCooldown}%&c!" to {_p}
+		stop
 	if {_cooldown} is less than {@poseidon.src.cooldown}:
 		play sound "minecraft:entity.villager.no" to {_p}
 		send action bar "&cYou can't use &a%{@poseidon.src.name}%&c for another &e%difference between {@poseidon.src.cooldown} and {_cooldown}%&c!" to {_p}
 	else:
 		set {mythic::%{_p}'s uuid%.poseidon.src.lastUsed} to now
+		set {mythic::%{_p}'s uuid%.cooldown} to now
 		play sound "minecraft:weather.rain" to {_p}
 		set {_amount} to a random integer between 20*6*6*6 and 40*6*6*6
 		loop {_amount} times:
@@ -244,11 +324,17 @@ function poseidonsrc(p: player):
 
 function poseidonrc(p: player):
 	set {_cooldown} to difference between {mythic::%{_p}'s uuid%.poseidon.rc.lastUsed} and now
+	set {_gCooldown} to difference between {mythic::%{_p}'s uuid%.cooldown} and now
+	if {_gCooldown} is less than {@globalCooldown}:
+		play sound "minecraft:entity.villager.no" to {_p}
+		send action bar "&cYou can't use abilities for another &e%difference between {@globalCooldown} and {_gCooldown}%&c!" to {_p}
+		stop
 	if {_cooldown} is less than {@poseidon.rc.cooldown}:
 		play sound "minecraft:entity.villager.no" to {_p}
 		send action bar "&cYou can't use &a%{@poseidon.rc.name}%&c for another &e%difference between {@poseidon.rc.cooldown} and {_cooldown}%&c!" to {_p}
 	else:
 		set {mythic::%{_p}'s uuid%.poseidon.rc.lastUsed} to now
+		set {mythic::%{_p}'s uuid%.cooldown} to now
 		apply dolphin's grace 2 to {_p} for 60 seconds
 		play sound "minecraft:entity.dolphin.ambient" to {_p}
 
@@ -256,21 +342,33 @@ function poseidonrc(p: player):
 
 function hermesrc(p: player):
 	set {_cooldown} to difference between {mythic::%{_p}'s uuid%.hermes.rc.lastUsed} and now
+	set {_gCooldown} to difference between {mythic::%{_p}'s uuid%.cooldown} and now
+	if {_gCooldown} is less than {@globalCooldown}:
+		play sound "minecraft:entity.villager.no" to {_p}
+		send action bar "&cYou can't use abilities for another &e%difference between {@globalCooldown} and {_gCooldown}%&c!" to {_p}
+		stop
 	if {_cooldown} is less than {@hermes.rc.cooldown}:
 		play sound "minecraft:entity.villager.no" to {_p}
 		send action bar "&cYou can't use &a%{@hermes.rc.name}%&c for another &e%difference between {@hermes.rc.cooldown} and {_cooldown}%&c!" to {_p}
 	else:
 		set {mythic::%{_p}'s uuid%.hermes.rc.lastUsed} to now
+		set {mythic::%{_p}'s uuid%.cooldown} to now
 		apply speed 2 to {_p} for 30 seconds
 		play sound "minecraft:entity.player.levelup" to {_p}
 
 function hermeslc(p: player):
 	set {_cooldown} to difference between {mythic::%{_p}'s uuid%.hermes.lc.lastUsed} and now
+	set {_gCooldown} to difference between {mythic::%{_p}'s uuid%.cooldown} and now
+	if {_gCooldown} is less than {@globalCooldown}:
+		play sound "minecraft:entity.villager.no" to {_p}
+		send action bar "&cYou can't use abilities for another &e%difference between {@globalCooldown} and {_gCooldown}%&c!" to {_p}
+		stop
 	if {_cooldown} is less than {@hermes.lc.cooldown}:
 		play sound "minecraft:entity.villager.no" to {_p}
 		send action bar "&cYou can't use &a%{@hermes.lc.name}%&c for another &e%difference between {@hermes.lc.cooldown} and {_cooldown}%&c!" to {_p}
 	else:
 		set {mythic::%{_p}'s uuid%.hermes.lc.lastUsed} to now
+		set {mythic::%{_p}'s uuid%.cooldown} to now
 		#apply haste 3 to {_p} for 20 seconds
 		set {_p}'s attack speed attribute to 5
 		play sound "minecraft:entity.player.levelup" to {_p}
@@ -280,11 +378,17 @@ function hermeslc(p: player):
 
 function hermessrc(p: player):
 	set {_cooldown} to difference between {mythic::%{_p}'s uuid%.hermes.src.lastUsed} and now
+	set {_gCooldown} to difference between {mythic::%{_p}'s uuid%.cooldown} and now
+	if {_gCooldown} is less than {@globalCooldown}:
+		play sound "minecraft:entity.villager.no" to {_p}
+		send action bar "&cYou can't use abilities for another &e%difference between {@globalCooldown} and {_gCooldown}%&c!" to {_p}
+		stop
 	if {_cooldown} is less than {@hermes.src.cooldown}:
 		play sound "minecraft:entity.villager.no" to {_p}
 		send action bar "&cYou can't use &a%{@hermes.src.name}%&c for another &e%difference between {@hermes.src.cooldown} and {_cooldown}%&c!" to {_p}
 	else:
 		set {mythic::%{_p}'s uuid%.hermes.src.lastUsed} to now
+		set {mythic::%{_p}'s uuid%.cooldown} to now
 		play sound "minecraft:entity.item.break" to {_p}
 		set {_l1} to location of {_p} ~ vector(10,10,10)
 		set {_l2} to location of {_p} ~ vector(-10,-10,-10)
@@ -296,6 +400,11 @@ function hermessrc(p: player):
 
 function areslc(p: player):
 	set {_cooldown} to difference between {mythic::%{_p}'s uuid%.ares.lc.lastUsed} and now
+	set {_gCooldown} to difference between {mythic::%{_p}'s uuid%.cooldown} and now
+	if {_gCooldown} is less than {@globalCooldown}:
+		play sound "minecraft:entity.villager.no" to {_p}
+		send action bar "&cYou can't use abilities for another &e%difference between {@globalCooldown} and {_gCooldown}%&c!" to {_p}
+		stop
 	if {_cooldown} is less than {@ares.lc.cooldown}:
 		play sound "minecraft:entity.villager.no" to {_p}
 		send action bar "&cYou can't use &a%{@ares.lc.name}%&c for another &e%difference between {@ares.lc.cooldown} and {_cooldown}%&c!" to {_p}
@@ -306,11 +415,17 @@ function areslc(p: player):
 
 function aresrc(p: player):
 	set {_cooldown} to difference between {mythic::%{_p}'s uuid%.ares.rc.lastUsed} and now
+	set {_gCooldown} to difference between {mythic::%{_p}'s uuid%.cooldown} and now
+	if {_gCooldown} is less than {@globalCooldown}:
+		play sound "minecraft:entity.villager.no" to {_p}
+		send action bar "&cYou can't use abilities for another &e%difference between {@globalCooldown} and {_gCooldown}%&c!" to {_p}
+		stop
 	if {_cooldown} is less than {@ares.rc.cooldown}:
 		play sound "minecraft:entity.villager.no" to {_p}
 		send action bar "&cYou can't use &a%{@ares.rc.name}%&c for another &e%difference between {@ares.rc.cooldown} and {_cooldown}%&c!" to {_p}
 	else:
 		set {mythic::%{_p}'s uuid%.ares.rc.lastUsed} to now
+		set {mythic::%{_p}'s uuid%.cooldown} to now
 		set {_l1} to location of {_p} ~ vector(15,15,15)
 		set {_l2} to location of {_p} ~ vector(-15,-15,-15)
 		loop entities where [input is within {_l1} and {_l2}]:
@@ -322,11 +437,17 @@ function aresrc(p: player):
 
 function heliosslc(p: player):
 	set {_cooldown} to difference between {mythic::%{_p}'s uuid%.helios.slc.lastUsed} and now
+	set {_gCooldown} to difference between {mythic::%{_p}'s uuid%.cooldown} and now
+	if {_gCooldown} is less than {@globalCooldown}:
+		play sound "minecraft:entity.villager.no" to {_p}
+		send action bar "&cYou can't use abilities for another &e%difference between {@globalCooldown} and {_gCooldown}%&c!" to {_p}
+		stop
 	if {_cooldown} is less than {@helios.slc.cooldown}:
 		play sound "minecraft:entity.villager.no" to {_p}
 		send action bar "&cYou can't use &a%{@helios.slc.name}%&c for another &e%difference between {@helios.slc.cooldown} and {_cooldown}%&c!" to {_p}
 	else:
 		set {mythic::%{_p}'s uuid%.helios.slc.lastUsed} to now
+		set {mythic::%{_p}'s uuid%.cooldown} to now
 		loop 5 times:
 			play sound "minecraft:entity.blaze.hurt" to {_p}
 			raycastOrange({_p}, 25)
@@ -334,11 +455,17 @@ function heliosslc(p: player):
 
 function heliosrc(p: player):
 	set {_cooldown} to difference between {mythic::%{_p}'s uuid%.helios.rc.lastUsed} and now
+	set {_gCooldown} to difference between {mythic::%{_p}'s uuid%.cooldown} and now
+	if {_gCooldown} is less than {@globalCooldown}:
+		play sound "minecraft:entity.villager.no" to {_p}
+		send action bar "&cYou can't use abilities for another &e%difference between {@globalCooldown} and {_gCooldown}%&c!" to {_p}
+		stop
 	if {_cooldown} is less than {@helios.rc.cooldown}:
 		play sound "minecraft:entity.villager.no" to {_p}
 		send action bar "&cYou can't use &a%{@helios.slc.name}%&c for another &e%difference between {@helios.rc.cooldown} and {_cooldown}%&c!" to {_p}
 	else:
 		set {mythic::%{_p}'s uuid%.helios.rc.lastUsed} to now
+		set {mythic::%{_p}'s uuid%.cooldown} to now
 		apply speed to {_p} for 40 seconds
 		apply strength 2 to {_p} for 40 seconds
 		play sound "minecraft:item.armor.equip_diamond" to {_p}
@@ -367,11 +494,17 @@ every 1 second:
 
 function hadesrc(p: player):
 	set {_cooldown} to difference between {mythic::%{_p}'s uuid%.hades.rc.lastUsed} and now
+	set {_gCooldown} to difference between {mythic::%{_p}'s uuid%.cooldown} and now
+	if {_gCooldown} is less than {@globalCooldown}:
+		play sound "minecraft:entity.villager.no" to {_p}
+		send action bar "&cYou can't use abilities for another &e%difference between {@globalCooldown} and {_gCooldown}%&c!" to {_p}
+		stop
 	if {_cooldown} is less than {@hades.rc.cooldown}:
 		play sound "minecraft:entity.villager.no" to {_p}
 		send action bar "&cYou can't use &a%{@hades.rc.name}%&c for another &e%difference between {@hades.rc.cooldown} and {_cooldown}%&c!" to {_p}
 	else:
 		set {mythic::%{_p}'s uuid%.hades.rc.lastUsed} to now
+		set {mythic::%{_p}'s uuid%.cooldown} to now
 		loop 8 times:
 			spawn wither skeleton at location of {_p}
 			set {_ws} to last spawned entity
@@ -386,11 +519,17 @@ function hadesrc(p: player):
 
 function hadeslc(p: player):
 	set {_cooldown} to difference between {mythic::%{_p}'s uuid%.hades.lc.lastUsed} and now
+	set {_gCooldown} to difference between {mythic::%{_p}'s uuid%.cooldown} and now
+	if {_gCooldown} is less than {@globalCooldown}:
+		play sound "minecraft:entity.villager.no" to {_p}
+		send action bar "&cYou can't use abilities for another &e%difference between {@globalCooldown} and {_gCooldown}%&c!" to {_p}
+		stop
 	if {_cooldown} is less than {@hades.lc.cooldown}:
 		play sound "minecraft:entity.villager.no" to {_p}
 		send action bar "&cYou can't use &a%{@hades.lc.name}%&c for another &e%difference between {@hades.lc.cooldown} and {_cooldown}%&c!" to {_p}
 	else:
 		set {mythic::%{_p}'s uuid%.hades.lc.lastUsed} to now
+		set {mythic::%{_p}'s uuid%.cooldown} to now
 		play sound "minecraft:entity.enderman.teleport" to {_p}
 		set {_l1} to location of {_p} ~ vector(5,5,5)
 		set {_l2} to location of {_p} ~ vector(-5,-5,-5)
@@ -401,11 +540,17 @@ function hadeslc(p: player):
 
 function hadesslc(p: player):
 	set {_cooldown} to difference between {mythic::%{_p}'s uuid%.hades.slc.lastUsed} and now
+	set {_gCooldown} to difference between {mythic::%{_p}'s uuid%.cooldown} and now
+	if {_gCooldown} is less than {@globalCooldown}:
+		play sound "minecraft:entity.villager.no" to {_p}
+		send action bar "&cYou can't use abilities for another &e%difference between {@globalCooldown} and {_gCooldown}%&c!" to {_p}
+		stop
 	if {_cooldown} is less than {@hades.slc.cooldown}:
 		play sound "minecraft:entity.villager.no" to {_p}
 		send action bar "&cYou can't use &a%{@hades.slc.name}%&c for another &e%difference between {@hades.slc.cooldown} and {_cooldown}%&c!" to {_p}
 	else:
 		set {mythic::%{_p}'s uuid%.hades.slc.lastUsed} to now
+		set {mythic::%{_p}'s uuid%.cooldown} to now
 		play sound "minecraft:entity.blaze.hurt" to {_p}
 		set {_l1} to location of {_p} ~ vector(10,10,10)
 		set {_l2} to location of {_p} ~ vector(-10,-10,-10)
@@ -413,6 +558,24 @@ function hadesslc(p: player):
 			if loop-entity is not {_p}:
 				damage loop-entity by 4.5
 				apply wither 10 to loop-entity for 10 seconds
+
+# reroll book
+function reroll(p: player, i: item) :: boolean:
+	set metadata tag "rerollGUI" of {_p} to a new chest inventory with 5 rows named "Reroll Ability"
+	set metadata tag "rerollBookUsed" of {_p} to {_i}
+	set {_reroll} to metadata tag "rerollGUI" of {_p}
+	loop 45 times:
+		set slot (loop-number + -1) of {_reroll} to red stained glass pane named "&r"
+	loop 7 times:
+		set slot loop-number of {_reroll} to gray stained glass pane named "&r"
+		set slot (loop-number + 9) of {_reroll} to gray stained glass pane named "&r"
+		set slot (loop-number + 18) of {_reroll} to gray stained glass pane named "&r"
+		set slot (loop-number + 27) of {_reroll} to gray stained glass pane named "&r"
+		set slot (loop-number + 36) of {_reroll} to gray stained glass pane named "&r"
+	set slot 13 of {_reroll} to air
+	set slot 22 of {_reroll} to gold ingot named "&aReroll Ability"
+	set slot 40 of {_reroll} to barrier named "&4&lClose"
+	open {_reroll} to {_p}
 
 
 # -------- EVENTS --------
@@ -475,6 +638,9 @@ on rightclick:
 				cancel event
 			else if player's tool is {@hades}:
 				hadesrc(player)
+				cancel event
+			else if player's tool is {@reroll}:
+				reroll(player, (player's tool))
 				cancel event
 
 on damage by player:
@@ -539,11 +705,74 @@ on load:
 		set {dev} to {@developer}
 	if {abilityList} is not set:
 		set {abilityList::*} to "zeus", "poseidon", "hermes", "ares", "helios", and "hades"
+		set {_i} to {@reroll} named "&aReroll Book" with custom model data 1
+	register new shaped recipe for {_i} using diamond block, netherite scrap, diamond block, netherite scrap, totem of undying, netherite scrap, diamond block, netherite scrap, and diamond block with id "mythic:reroll_book"
+
+on drop:
+	custom model data of event-item is 1
+	if any:
+		event-item is {@zeus}
+		event-item is {@poseidon}
+		event-item is {@hermes}
+		event-item is {@ares}
+		event-item is {@helios}
+		event-item is {@hades}
+	then:
+		cancel event
 
 on join:
 	if {playerAbilities::%player's uuid%} is not set:
 		set {playerAbilities::%player's uuid%} to random element of {abilityList::*}
 		execute console command "tool %{playerAbilities::%player's uuid%}% %player%"
+
+on inventory click:
+	if event-inventory is metadata tag "rerollGUI" of player:
+		event-inventory is not player's inventory
+		if index of event-slot is not 13:
+			cancel event
+			if index of event-slot is 40:
+				close inventory to player
+				stop
+			else if index of event-slot is 22:
+				if metadata tag "rerollUsed" of player is event-inventory:
+					play sound "minecraft:entity.villager.no" to player
+					stop
+				slot 13 of event-inventory is not air
+				custom model data of slot 13 of event-inventory is 1
+				set {_item} to slot 13 of event-inventory
+				if any:
+					{_item} is {@zeus}
+					{_item} is {@poseidon}
+					{_item} is {@hermes}
+					{_item} is {@ares}
+					{_item} is {@helios}
+					{_item} is {@hades}
+				then:
+					remove (metadata tag "rerollBookUsed" of player) from player's inventory
+					reset name of {_item}
+					reset custom model data of {_item}
+					set metadata tag "rerollUsed" of player to metadata tag "rerollGUI" of player
+					set {_name} to itemToName({_item})
+					set {_abilityList::*} to {abilityList::*}
+					remove {_name} from {_abilityList::*}
+					set slot 13 of event-inventory to tool(random element of {_abilityList::*})
+					play sound "minecraft:block.anvil.destroy" to player
+					stop
+				else:
+					play sound "minecraft:entity.villager.no" to player
+			else:
+				stop
+			play sound "minecraft:entity.villager.no" to player
+		
+on inventory close:
+	if event-inventory is metadata tag "rerollGUI" of player:
+		if player can hold slot 13 of event-inventory:
+			give player slot 13 of event-inventory
+		else:
+			send "&cYou do not have enough space in your inventory to receive the item!" to player
+			play sound "minecraft:entity.villager.no" to player
+			wait 1 tick
+			open event-inventory to player
 
 # hades rc events
 
@@ -629,6 +858,9 @@ command /tool <string> [<player>]:
 		else if arg-1 is "hades":
 			give {@hades} with custom model data 1 named "&rAspect of Hades" to {_p}
 			send "&aYou have been given the &eHades &atool!" to {_p}
+		else if arg-1 is "reroll":
+			give {@reroll} with custom model data 1 named "&aReroll Book" to {_p}
+			send "&aYou have been given the &eReroll Book!" to {_p}
 		else:
 			send "Usage: /tool <zeus/poseidon/hermes/ares/helios/hades>" to player
 
